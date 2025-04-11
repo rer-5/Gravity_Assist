@@ -1,7 +1,7 @@
 import pygame
 from random import randint
 pygame.init()
-from math import sin, cos, atan, sqrt, pi
+from math import sin, cos, sqrt, pi
 canvas = pygame.display.set_mode((0, 0), pygame.FULLSCREEN) 
 canvas_rect = canvas.get_rect()
 w_canvas = canvas_rect.right
@@ -16,7 +16,7 @@ def window(background=False):
     keys = pygame.key.get_pressed()
     mouse = pygame.mouse.get_pressed()[0]
     mousepos = pygame.mouse.get_pos()
-    if keys[pygame.K_ESCAPE] and keys[pygame.K_0]: pygame.quit()
+    if keys[pygame.K_ESCAPE]: pygame.quit()
     if page_scroll < 0: page_scroll = 0
     up_track = False
     down_track = False
