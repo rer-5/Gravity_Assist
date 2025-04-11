@@ -9,6 +9,7 @@ h_canvas = canvas_rect.bottom
 clock = pygame.time.Clock()
 pygame.display.set_caption("Gravity Assist")
 page_scroll = 0
+can = True
 def window(background=False):
     global keys, mouse, mousepos, page_scroll
     if background: canvas.fill(background)
@@ -40,7 +41,6 @@ def text(text, x, y, si, col, font="jungle adventurer", shadow=False):
     canvas.blit(texting, (x-texting.get_width()/2,y))
 back_arrow = pygame.image.load("images/arrow.png").convert_alpha()
 back_rect = pygame.Rect(0,0,100,100)
-space = pygame.transform.scale(pygame.image.load(f"images/space_1.png").convert_alpha(), (w_canvas, h_canvas))
 class UFO():
     def __init__(self, x, y, r):
         self.r = r
@@ -94,9 +94,11 @@ level = 1
 levels = {
     1: [(50,150,150), (w_canvas-200,h_canvas-200,150), [(w_canvas/2-200, h_canvas/2-200, 400)]],
     2: [(50,150,100), (w_canvas-200,200,100), [(w_canvas/2-300, 50, 600), (w_canvas-300, h_canvas-300, 150)]],
-    3: [(50,h_canvas-200,50), (w_canvas-500, h_canvas-150, 100), [(500, 500, 500, 1), (50, 50, 300, 2), (w_canvas-400, 250, 250, 3)]]
+    3: [(50,h_canvas-200,50), (w_canvas-500, h_canvas-150, 100), [(500, 500, 500), (50, 50, 300), (w_canvas-400, 250, 250)]],
+    4: [(w_canvas-150,50,50), (300, h_canvas/2+175, 75), [(400, 500, 200), (150, 50, 500), (w_canvas-800, 250, 800)]]
     }
-skins = {"UFO":[1,2],"Spaceship":[1,1], "Space":[1,1]}
+skins = {"UFO":[1,2],"Spaceship":[1,1], "Space":[1,3]}
+space = pygame.transform.scale(pygame.image.load(f"images/space_{skins['Space'][0]}.png").convert_alpha(), (w_canvas, h_canvas))
 cc = "UFO"
 while True:
     window()
@@ -145,6 +147,7 @@ while True:
                         if skin_rect.collidepoint(mousepos) and can:
                             skins[cc][0] = skin+1
                             can = False
+                            space = pygame.transform.scale(pygame.image.load(f"images/space_{skins['Space'][0]}.png").convert_alpha(), (w_canvas, h_canvas))
                     else:
                         can = True
                 text("Skin Selection", w_canvas/2, 50, 200, "white", shadow=True)
