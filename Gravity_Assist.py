@@ -20,6 +20,12 @@ def window(background=False):
     if page_scroll < 0: page_scroll = 0
     up_track = False
     down_track = False
+    if keys[pygame.K_ESCAPE] or  keys[pygame.K_s]:
+        ssk = []
+        for i in skins: ssk.append(skins[i][0])
+        with open('GA_SF.py', 'w') as sf:
+            sf.write(f"level = {level}\nd_levels = {d_levels}\nssk = {ssk}")
+        print('hello')
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -94,11 +100,18 @@ levels = [
     [(50,150,150), (w_canvas-200,h_canvas-200,150), [(w_canvas/2-200, h_canvas/2-200, 400)]],
     [(50,150,100), (w_canvas-200,200,100), [(w_canvas/2-300, 50, 600), (w_canvas-300, h_canvas-300, 150)]],
     [(50,h_canvas-200,50), (w_canvas-500, h_canvas-150, 100), [(500, 500, 500), (50, 50, 300), (w_canvas-400, 250, 250)]],
-    [(w_canvas-150,50,50), (300, h_canvas/2+175, 75), [(400, 500, 200), (150, 50, 500), (w_canvas-800, 250, 800)]]
+    [(w_canvas-150,50,50), (300, h_canvas/2+175, 75), [(400, 500, 200), (150, 50, 500), (w_canvas-800, 250, 800)]],
+    [(63, 795, 100), (1245, 208, 100), [(619, 561, 170), (815, 213, 250), (762, 738, 250), (904, 410, 675), (-203, -207, 915), (272, 800, 145)]],
+    [(58, 763, 100), (1270, 200, 100), [(206, 198, 345), (586, 492, 395), (777, 75, 470)]],
+    [(441, 481, 100), (976, 470, 100), [(552, 443, 225), (665, 253, 185), (793, 644, 170), (975, 622, 250), (912, 238, 210), (15, 571, 330), (-13, 8, 380)]],
+    [(955, 443, 100), (401, 421, 100), [(121, 534, 250), (59, 147, 250), (982, 584, 250), (1246, -7, 250), (421, 175, 630), (331, 40, 250)]]
     ]
-level = 1
-d_levels = []
-ssk = [1,1,1]
+try:
+    from GA_SF import *
+except ModuleNotFoundError:
+    level = 1
+    d_levels = []
+    ssk = [1,1,1]
 skins = {"UFO":[ssk[0],5],"Spaceship":[ssk[1],1], "Space":[ssk[2],3]}
 space = pygame.transform.scale(pygame.image.load(f"images/space_{skins['Space'][0]}.png").convert_alpha(), (w_canvas, h_canvas))
 cc = "UFO"
@@ -307,7 +320,7 @@ while True:
                 else: cax = True
             if keys[pygame.K_p]:
                 if cap:
-                    planets.append(Planet(w_canvas/2,h_canvas/2, 250, (len(planets)%5)+1))
+                    planets.append(Planet(mousepos[0]-125,mousepos[1]-125, 250, (len(planets)%5)+1))
                     cap = False
             else: cap = True
             if keys[pygame.K_s] or keys[pygame.K_q]:
