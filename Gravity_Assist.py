@@ -75,6 +75,7 @@ class Planet():
 class Goal():
     def __init__(self, x, y ,r):
         self.rect = pygame.Rect(x, y, r, r)
+        self.r = r
         self.image = pygame.transform.scale(pygame.image.load(f"images/spaceship_{skins['Spaceship'][0]}.png").convert_alpha(), (r, r))
 class Opening_icons():
     def __init__(self, name, pos):
@@ -89,18 +90,21 @@ for i in range(40):
         pygame.draw.line(canvas, "red", (w_canvas/2, h_canvas/2), (w_canvas/2 + 200*cos(i/(2*pi)), h_canvas/2 - 200*sin(i/(2*pi))))
         pygame.display.update()
         clock.tick(40)
-play = False
-level = 1
 levels = [
     [(50,150,150), (w_canvas-200,h_canvas-200,150), [(w_canvas/2-200, h_canvas/2-200, 400)]],
     [(50,150,100), (w_canvas-200,200,100), [(w_canvas/2-300, 50, 600), (w_canvas-300, h_canvas-300, 150)]],
     [(50,h_canvas-200,50), (w_canvas-500, h_canvas-150, 100), [(500, 500, 500), (50, 50, 300), (w_canvas-400, 250, 250)]],
     [(w_canvas-150,50,50), (300, h_canvas/2+175, 75), [(400, 500, 200), (150, 50, 500), (w_canvas-800, 250, 800)]]
     ]
+level = 1
 d_levels = []
-skins = {"UFO":[1,5],"Spaceship":[1,1], "Space":[1,3]}
+ssk = [1,1,1]
+skins = {"UFO":[ssk[0],5],"Spaceship":[ssk[1],1], "Space":[ssk[2],3]}
 space = pygame.transform.scale(pygame.image.load(f"images/space_{skins['Space'][0]}.png").convert_alpha(), (w_canvas, h_canvas))
 cc = "UFO"
+play = False
+playing = False
+editing = False
 while True:
     window()
     canvas.blit(space, (0,0))
@@ -195,18 +199,45 @@ while True:
                 pygame.draw.rect(canvas, "green", add_rect)
                 pygame.draw.rect(canvas, "black", add_rect, width=5)
                 text("+", add_rect.x+75, add_rect.y+12.5, 150, "black")
+                if mouse:
+                    if add_rect.collidepoint(mousepos) and can:
+                        d_levels.append([(50,150,100), (w_canvas-200,200,100), []])
+                        elvle = -1
+                        play = True
+                        can = False
+                        editing = True
+                        slevel = d_levels
+                        break
+                else: can = True
                 for elvle in range(len(d_levels)):
                     dl_rect = pygame.Rect(w_canvas/5*(((elvle+1)%4)+1)-75,250+200*int((elvle+1)/4)-page_scroll,150,150)
                     pygame.draw.rect(canvas, "green", dl_rect)
-                    if mouse:
-                        if dl_rect.collidepoint(mousepos) and can:
-                            play = True
-                            eve = False
-                            can = False
-                            slevel = d_levels
-                            break
-                    else:
-                        can = True
+                    if dl_rect.collidepoint(mousepos):
+                        del_rect = pygame.Rect(dl_rect.right-50,dl_rect.y,50,50)
+                        pygame.draw.rect(canvas, "red", del_rect)
+                        text("X", del_rect.x+25, del_rect.y+5, 75, "black")
+                        edit_rect = pygame.Rect(dl_rect.x,dl_rect.y,50,50)
+                        canvas.blit(pygame.transform.scale(pygame.image.load(f"images/Designer_icon.png").convert_alpha(), (50, 50)),edit_rect)
+                        if mouse:
+                            if can:
+                                if del_rect.collidepoint(mousepos):
+                                    d_levels.pop(elvle)
+                                    can = False
+                                elif edit_rect.collidepoint(mousepos): 
+                                    play = True
+                                    eve = False
+                                    can = False
+                                    editing = True
+                                    slevel = d_levels
+                                    break
+                                else:
+                                    play = True
+                                    eve = False
+                                    can = False
+                                    slevel = d_levels
+                                    break
+                        else:
+                            can = True
                     pygame.draw.rect(canvas, "black", dl_rect, width=5)
                     text(str(elvle+1), dl_rect.x+75, dl_rect.y+25, 150, "black")
                 text("Level Designer", w_canvas/2, 50, 200, "white", shadow=True)
@@ -216,13 +247,14 @@ while True:
                 pygame.display.update()
                 clock.tick(60)
     if play:
-        playing = True
+        if not editing:
+            playing = True
         launch = False
         p = UFO(slevel[elvle][0][0], slevel[elvle][0][1], slevel[elvle][0][2])
         goal = Goal(slevel[elvle][1][0], slevel[elvle][1][1], slevel[elvle][1][2])
         planets = []
         for i in range(len(slevel[elvle][2])):
-            planets.append(Planet(slevel[elvle][2][i][0], slevel[elvle][2][i][1], slevel[elvle][2][i][2], i+1))
+            planets.append(Planet(slevel[elvle][2][i][0], slevel[elvle][2][i][1], slevel[elvle][2][i][2], (i%5)+1))
         while playing:
             window()
             canvas.blit(space, (0,0))
@@ -230,8 +262,7 @@ while True:
                 canvas.blit(planet.image, planet.rect)
                 if pygame.Rect.colliderect(p.smallrect, planet.smallrect) or keys[pygame.K_r]:
                     playing = False
-            if launch: 
-                    p.launch()
+            if launch: p.launch()
             if not launch and can: p.line()
             if pygame.Rect.colliderect(goal.rect, p.rect):
                 playing = False
@@ -246,6 +277,46 @@ while True:
             if mouse: 
                 if can: launch = True
             else: can = True
+            pygame.display.update()
+            clock.tick(60)
+        cap = True
+        cax = True
+        while editing:
+            window()
+            canvas.blit(space, (0,0))
+            for i in planets+[p,goal]:
+                canvas.blit(i.image, i.rect)
+                if mouse:
+                    if i.rect.collidepoint(mousepos):
+                        i.rect.centerx, i.rect.centery = mousepos
+                if i.rect.collidepoint(mousepos):
+                    if keys[pygame.K_EQUALS]:
+                        i.r += 5
+                        i.image = pygame.transform.scale(i.image, (i.r, i.r))
+                        i.rect = pygame.Rect(i.rect.x,i.rect.y,i.r,i.r)
+                    if keys[pygame.K_MINUS]:
+                        i.r -= 5
+                        if i.r < 50: i.r = 50
+                        i.image = pygame.transform.scale(i.image, (i.r, i.r))
+                        i.rect = pygame.Rect(i.rect.x,i.rect.y,i.r,i.r)
+            for planet in planets:
+                if keys[pygame.K_x]:
+                    if planet.rect.collidepoint(mousepos) and cax:
+                        planets.remove(planet)
+                        cax = False
+                else: cax = True
+            if keys[pygame.K_p]:
+                if cap:
+                    planets.append(Planet(w_canvas/2,h_canvas/2, 250, (len(planets)%5)+1))
+                    cap = False
+            else: cap = True
+            if keys[pygame.K_s] or keys[pygame.K_q]:
+                d_levels[elvle] = [(p.rect.x,p.rect.y,p.r),(goal.rect.x,goal.rect.y,goal.r),[]]
+                for i in planets:
+                    d_levels[elvle][2].append((i.rect.x,i.rect.y,i.r))
+            if keys[pygame.K_q]:
+                editing = False
+                play = False
             pygame.display.update()
             clock.tick(60)
     pygame.display.update()
